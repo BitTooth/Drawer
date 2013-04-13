@@ -2,9 +2,8 @@
 #define __CUBE_H
 
 #include "main.h"
-// #include "d3dUtil.h"
 
-class Cube
+class Cube : public Object
 {
 private:
 	ID3DXMesh *mesh;
@@ -16,15 +15,15 @@ private:
 	void FormTransMatrix();
 public:
 	Cube(IDirect3DDevice9 *m_device);
-	D3DXVECTOR3 GetPos();
-	D3DXVECTOR3 GetScale();
-	D3DXVECTOR3 GetRotation();
-	void SetPos(D3DXVECTOR3 vec);
-	void SetScale(D3DXVECTOR3 vec);
-	void SetRotation(D3DXVECTOR3 vec);
-
-	void SetTransMatrix(D3DXMATRIX matrix);
-	D3DXMATRIX GetTransMatrix();
+	virtual D3DXVECTOR3 GetPos();
+	virtual D3DXVECTOR3 GetScale();
+	virtual D3DXVECTOR3 GetRotation();
+	virtual void SetPos(D3DXVECTOR3 vec);
+	virtual void SetScale(D3DXVECTOR3 vec);
+	virtual void SetRotation(D3DXVECTOR3 vec);
+	
+	virtual void SetTransMatrix(D3DXMATRIX matrix);
+	virtual D3DXMATRIX GetTransMatrix();
 
 	virtual BOOL Draw();
 	virtual VOID Release();

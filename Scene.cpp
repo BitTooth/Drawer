@@ -31,7 +31,7 @@ VOID Scene::Update(float dt)
 {
 	static float p = 0;
 	
-	std::vector<Cube*>::iterator it;
+	std::vector<Object*>::iterator it;
 	for (it = m_objects.begin(); it != m_objects.end(); ++it)
 	{
 		//Do any work with objects
@@ -83,70 +83,62 @@ VOID Scene::Update(float dt)
 
 VOID Scene::OnDestroy()
 {
-	std::vector<Cube*>::iterator it;
+	std::vector<Object*>::iterator it;
 	for (it = m_objects.begin(); it != m_objects.end(); ++it)
 	{
 		(*it)->Release();
 	}
 }
 
-std::vector<Cube*>* Scene::GetObjects()
+std::vector<Object*>* Scene::GetObjects()
 {
 	return &m_objects;
 }
 
-BOOL Scene::InitObjectsFromFile(IDirect3DDevice9 *m_device)
+BOOL Scene::Init(IDirect3DDevice9 *m_device)
 {
 	m_XToTurn = 0.f;
-	//Init scene from file
-	
-	/*Cube* cube = new Cube();
-	m_objects.push_back(cube);
-
-	Plane* plane = new Plane();
-	m_objects.push_back(plane);
-	
-	Sphere* sphere = new Sphere();
-	D3DXVECTOR3 pos(0.0f, 0.0f, 2.0f);
-	sphere->SetPos(pos);
-	m_objects.push_back(sphere);*/
-
-	Cube *cubeMesh = new Cube(m_device);
-
-	// m_effects.LoadEffectFromFile("LambertLighting.txt");
-	// m_materials.LoadMaterialFromFile("Material.txt");
-
-	// SceneObject* obj = new SceneObject;
-
-	// obj->m_mesh = cubeMesh;
-	// m_materials.GetMaterial("DiffuseMaterial", &obj->m_material);
-	// m_effects.GetEffect("LambertLighting", &obj->m_effect);
 
 	m_objects.push_back(new Cube(m_device));
 	m_objects.push_back(new Cube(m_device));
+	m_objects.push_back(new Cube(m_device));
+	m_objects.push_back(new Cube(m_device));
+	m_objects.push_back(new Cube(m_device));
 
-	m_objects[0]->SetPos(D3DXVECTOR3(2.f, 2.f, 2.f));
-	m_objects[0]->SetScale(D3DXVECTOR3(80.f, 0.5f, 80.f));
-	m_objects[0]->SetRotation(D3DXVECTOR3(0.f, 0.f, 0.f));
-	m_objects[1]->SetPos(D3DXVECTOR3(0.f, 0.f, 0.f));
-	m_objects[1]->SetScale(D3DXVECTOR3(80.f, 0.5f, 80.f));
-	m_objects[1]->SetRotation(D3DXVECTOR3(0.f, 0.f, 0.f));
+	m_objects[0]->SetPos(D3DXVECTOR3(2.f, 2.f, 2.f));		//
+	m_objects[0]->SetScale(D3DXVECTOR3(50.f, 50.f, 70.f));	// KAMERA
+	m_objects[0]->SetRotation(D3DXVECTOR3(0.f, 0.f, 0.f));  // 
 
-	m_objects.push_back((new Cube(m_device)));
-	m_objects.push_back((new Cube(m_device)));
-	m_objects.push_back((new Cube(m_device)));
+	m_objects[1]->SetPos(D3DXVECTOR3(0.f, 0.f, 0.f));		// 
+	m_objects[1]->SetScale(D3DXVECTOR3(80.f, 0.1f, 80.f));	// LABEL
+	m_objects[1]->SetRotation(D3DXVECTOR3(0.f, 0.f, 0.f));  // 
 
-	m_objects[2]->SetPos(D3DXVECTOR3(50.f, 0.f, 0.f));
-	m_objects[2]->SetScale(D3DXVECTOR3(100.f, 1.f, 1.f));
-	m_objects[2]->SetRotation(D3DXVECTOR3(0.f, 0.f, 0.f));
+	m_objects[2]->SetPos(D3DXVECTOR3(50.f, 0.f, 0.f));		// 
+	m_objects[2]->SetScale(D3DXVECTOR3(100.f, 1.f, 1.f));	//	X AXIS
+	m_objects[2]->SetRotation(D3DXVECTOR3(0.f, 0.f, 0.f));	// 
 
-	m_objects[3]->SetPos(D3DXVECTOR3(0.f, 50.f, 0.f));
-	m_objects[3]->SetScale(D3DXVECTOR3(1.f, 100.f, 1.f));
-	m_objects[3]->SetRotation(D3DXVECTOR3(0.f, 0.f, 0.f));
+	m_objects[3]->SetPos(D3DXVECTOR3(0.f, 50.f, 0.f));		//  
+	m_objects[3]->SetScale(D3DXVECTOR3(1.f, 100.f, 1.f));	//  Y AXIS
+	m_objects[3]->SetRotation(D3DXVECTOR3(0.f, 0.f, 0.f));	//  
 
-	m_objects[4]->SetPos(D3DXVECTOR3(0.f, 0.f, 50.f));
-	m_objects[4]->SetScale(D3DXVECTOR3(1.f, 1.f, 100.f));
-	m_objects[4]->SetRotation(D3DXVECTOR3(0.f, 0.f, 0.f));
+	m_objects[4]->SetPos(D3DXVECTOR3(0.f, 0.f, 50.f));		//  
+	m_objects[4]->SetScale(D3DXVECTOR3(1.f, 1.f, 100.f));	//  Z AXIS
+	m_objects[4]->SetRotation(D3DXVECTOR3(0.f, 0.f, 0.f));	//
 
+	float triangle[] = 
+	{
+		-1.0f, 0.0f, -1.0f, 0.f, -1.f, 0.f,
+		-1.0f, 0.0f, +1.0f, 0.f, -1.f, 0.f,
+		+1.0f, 0.0f, +1.0f, 0.f, -1.f, 0.f
+	};
+
+	DWORD triagIndex[] = { 0, 1, 2 };
+
+	Object *triagMesh = new Mesh(m_device, triangle, triagIndex, 3, 3);
+	triagMesh->SetPos(D3DXVECTOR3(0.f, 50.f, 0.f));
+	triagMesh->SetScale(D3DXVECTOR3(100.f, 1.f, 100.f));
+	triagMesh->SetRotation(D3DXVECTOR3(0.0f, 90.0f, 0.0f));
+
+	m_objects.push_back(triagMesh);
 	return TRUE;
 }

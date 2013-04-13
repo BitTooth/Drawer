@@ -50,7 +50,7 @@ void Cube::FormTransMatrix()
 
 	D3DXMatrixTranslation(&transl, pos.x, pos.y, pos.z);
 	D3DXMatrixScaling(&scal, scale.x, scale.y, scale.z);
-	D3DXMatrixRotationYawPitchRoll(&rot, rotation.x, rotation.y, rotation.z);
+	D3DXMatrixRotationYawPitchRoll(&rot, rotation.x * 3.14f/180.f, rotation.y * 3.14f/180.f, rotation.z * 3.14f/180.f);
 
 	trans = scal*rot*transl;
 }
@@ -61,15 +61,9 @@ D3DXMATRIX Cube::GetTransMatrix()
 }
 
 void Cube::SetTransMatrix(D3DXMATRIX matrix)
-{
-	//for (int i = 0; i < 4; ++i)
-	//	for (int j = 0; j < 4; ++j)
-	//		trans.m[i][j] = matrix[i][j];
-	//		
+{	
 	trans = matrix;
 }
-
-
 
 BOOL Cube::Draw()
 {

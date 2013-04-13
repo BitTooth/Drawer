@@ -75,7 +75,7 @@ void windowThread(void*)
 	MSG msg  = {0};
 	wnd.Init((HINSTANCE)GetModuleHandle(NULL), SW_SHOW, &scene);
 	render.Init(&wnd, &build, true);
-	scene.InitObjectsFromFile(render.m_device);
+	scene.Init(render.m_device);
 
 	while (msg.message != WM_QUIT)
 	{

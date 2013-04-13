@@ -24,7 +24,7 @@ struct Camera
 class Scene
 {
 private:
-	std::vector<Cube*> m_objects;
+	std::vector<Object*> m_objects;
 
 	float m_XToTurn;
 public:
@@ -32,8 +32,8 @@ public:
 	Camera *camera;
 	VOID Update(float dt);
 	VOID OnDestroy();
-	std::vector<Cube*>* GetObjects();
-	BOOL InitObjectsFromFile(IDirect3DDevice9 *m_device);
+	std::vector<Object*>* GetObjects();
+	BOOL Init(IDirect3DDevice9 *m_device);
 	void TurnLeft(float angle);
 	void TurnRight(float angle);
 };

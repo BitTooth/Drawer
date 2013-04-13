@@ -4,12 +4,14 @@
 #include <process.h>
 #include <vector>
 
+class Object;
 class Scene;
 class Builder;
 class Window;
 class Render;
 class Cube;
 class Vertex;
+class Mesh;
 
 #include "d3dUtil.h"
 #include "ARtoolkit.h"
@@ -17,9 +19,10 @@ class Vertex;
 #include "Cube.h"
 #include "Render.h"
 #include "Scene.h"
-#include "Vertex.h"
 #include "window.h"
-
+#include "Mesh.h"
+#include "Vertex.h"
+#include "Object.h"
 
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);

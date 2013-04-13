@@ -74,8 +74,8 @@ VOID Render::OnPaint(Scene *scene)
 		mFX->SetTechnique(tech);
 
 		//Drawing objects from Scene
-		std::vector<Cube*> *objects;
-		std::vector<Cube*>::iterator it;
+		std::vector<Object*> *objects;
+		std::vector<Object*>::iterator it;
 		objects = scene->GetObjects();
 		for (it = objects->begin(); it != objects->end(); ++it)
 		{
