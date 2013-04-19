@@ -21,19 +21,19 @@ Mesh::Mesh(LPDIRECT3DDEVICE9 pD3DDevice, float *vertecies, DWORD *indeces, int n
 	IDirect3DVertexBuffer9 *vertex;
 	IDirect3DIndexBuffer9  *index;
 	DWORD *attributes;
-	HR(D3DXCreateMesh(numVertex, numIndex, createMeshOpt, VertexPNDeclArr,  pD3DDevice, &mesh));
+	HR(D3DXCreateMesh(numIndex, numVertex, createMeshOpt, VertexPNDeclArr,  pD3DDevice, &mesh));
 
 	D3DVERTEXELEMENT9 decl[MAX_FVF_DECL_SIZE];
 	mesh->GetDeclaration(decl);
 
 	mesh->LockVertexBuffer(NULL, (void**)&vertex);
 	int a = sizeof(*decl);
-	memcpy(vertex, vertecies, numVertex * 6 * sizeof(float)/*sizeof(*decl)*/);
+	memcpy(vertex, vertecies, numVertex * 6 * sizeof(float));
 	mesh->UnlockVertexBuffer();
 
-	mesh->LockIndexBuffer(NULL, (void**)&index);
+	HR(mesh->LockIndexBuffer(NULL, (void**)&index));
 	memcpy(index, indeces, numIndex * sizeof(DWORD));
-	mesh->UnlockIndexBuffer();
+	HR(mesh->UnlockIndexBuffer());
 
 	mesh->LockAttributeBuffer(NULL, &attributes);
 	memset(attributes, 0, numVertex * sizeof(DWORD));

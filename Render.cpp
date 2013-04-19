@@ -5,6 +5,7 @@
 
 BOOL Render::Init(Window *wnd, Builder *build, bool windowed)
 {
+	m_stopDrawing = false;
 	m_window = wnd;
 	m_builder = build;
 	m_d3d9 = Direct3DCreate9(D3D_SDK_VERSION);
@@ -38,12 +39,17 @@ BOOL Render::Init(Window *wnd, Builder *build, bool windowed)
 	return TRUE;
 }
 
+VOID Render::DisableDrawing(bool enable)
+{
+	m_stopDrawing = enable;
+}
+
 VOID Render::OnPaint(Scene *scene)
 {
 	HR(m_device->Clear(0, NULL, D3DCLEAR_TARGET | D3DCLEAR_ZBUFFER, 
 		D3DCOLOR_XRGB(0, 0, 0), 1.0f, 0));
 
-	if (SUCCEEDED(m_device->BeginScene()))
+	if (!m_stopDrawing && SUCCEEDED(m_device->BeginScene()))
 	{
 		//TODO: Drawing here
 
@@ -60,7 +66,7 @@ VOID Render::OnPaint(Scene *scene)
 		D3DXMATRIX proj;
 		D3DXMatrixPerspectiveFovLH(&proj, D3DX_PI * 0.25f, 
 			(float)m_param.BackBufferWidth/(float)m_param.BackBufferHeight,
-			1.0f, 2000.0f);
+			1.0f, 100000.0f);
 
 		HR(m_device->SetTransform(D3DTS_PROJECTION, &proj));
 

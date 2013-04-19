@@ -31,6 +31,7 @@ private:
 	Window *m_window;
 	Builder *m_builder;
 	bool m_windowed;
+	bool m_stopDrawing;
 
 	IDirect3D9 *m_d3d9;
 	D3DPRESENT_PARAMETERS m_param;
@@ -45,6 +46,7 @@ private:
 public:
 	ID3DXEffect* mFX;
 
+	VOID DisableDrawing(bool enabled);
 	IDirect3DDevice9 *m_device;
 	BOOL Init(Window *wnd, Builder *build, bool windowed);
 	VOID OnPaint(Scene *scene);

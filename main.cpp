@@ -47,7 +47,9 @@ int commandLine()
 		}
 		if (cmd == "build")
 		{
+			render.DisableDrawing(true);
 			build.BuildModel(&scene);
+			render.DisableDrawing(false);
 			continue;
 		}
 		if (cmd == "?")

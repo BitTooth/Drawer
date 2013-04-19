@@ -1,18 +1,6 @@
 #ifndef __SCENE_H
 #define __SCENE_H
 
-//#include <vector>
-////#include "object.h"
-////#include "Camera.h"
-//#include <fstream>
-//#include <windows.h>
-////#include "plane.h"
-//#include "cube.h"
-//#include "Vertex.h"
-//// #include "Sphere.h"
-//// #include "SceneObject.h"
-//// #include "MaterialBrowser.h"
-//// #include "EffectsBrowser.h"
 #include "main.h"
 struct Camera 
 {
@@ -25,10 +13,12 @@ class Scene
 {
 private:
 	std::vector<Object*> m_objects;
+	IDirect3DDevice9 *m_pDevice;
 
 	float m_XToTurn;
 public:
 	Scene();
+	IDirect3DDevice9* GetDevice();
 	Camera *camera;
 	VOID Update(float dt);
 	VOID OnDestroy();

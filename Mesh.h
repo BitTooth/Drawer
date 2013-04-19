@@ -17,7 +17,7 @@ private:
 public:
 
 
-	Mesh(LPDIRECT3DDEVICE9 pD3DDevice, float *vetecies, DWORD *index, int numVertex, int numIndex);
+	Mesh(LPDIRECT3DDEVICE9 pD3DDevice, float *vertecies, DWORD *index, int numVertex, int numIndex);
 	virtual D3DXVECTOR3 GetPos();
 	virtual D3DXVECTOR3 GetScale();
 	virtual D3DXVECTOR3 GetRotation();
