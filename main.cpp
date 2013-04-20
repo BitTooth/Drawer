@@ -52,6 +52,11 @@ int commandLine()
 			render.DisableDrawing(false);
 			continue;
 		}
+		if (cmd == "resetCam")
+		{
+			scene.ResetCamera();
+			continue;
+		}
 		if (cmd == "?")
 		{
 			printHelp();
@@ -65,6 +70,7 @@ int commandLine()
 void printHelp()
 {
 	cout<<"\
+	resetCam : reset camera to default position\
 	load: load test image\
 	start: start working\
 	exit: close program\n\

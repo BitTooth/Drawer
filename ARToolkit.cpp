@@ -50,7 +50,7 @@ D3DXMATRIX ARToolkit::GetTransformMatrix( __int8* data )
 	ARMarkerInfo* markerInfo;
 	int markerNum;
 	double patt_center[2] = { 0.0, 0.0 };
-	double patt_width = 80.0;
+	double patt_width = 100.0;
 	double matrix[3][4];
 	D3DXMATRIX resMatrix;
 	D3DXMatrixIdentity(&resMatrix);
@@ -63,8 +63,6 @@ D3DXMATRIX ARToolkit::GetTransformMatrix( __int8* data )
 	for (int i = 0; i < 3; ++i)
 		for (int j = 0; j < 4; ++j)
 			resMatrix.m[i][j] = matrix[i][j];
-
-	D3DXMatrixTranspose(&resMatrix, &resMatrix);
 
 	return resMatrix;
 }

@@ -77,12 +77,12 @@ bool Builder::BuildNormal(int i1, int j1, int i2, int j2, int i3, int j3, D3DXVE
 
 float Builder::rad(float angle)
 {
-	return angle * 180.f / 3.14f;
+	return angle * 3.14f / 180.f;
 }
 
 void Builder::BuildModel(Scene *scene)
 {
-	// for each Image
+	// for each Image loaded from Kinect
 	for (int img = 0; img < m_nImagesCount; ++img)
 	{
 		//////////////////////////////////////////////////////////////////////
@@ -95,13 +95,19 @@ void Builder::BuildModel(Scene *scene)
 			MessageBoxA(NULL, "Marker not found", "Error", MB_OK);
 			return;
 		}
-		
+
+		matrix._24 *= -1;		// ARToolKit has axis y reverse
+		matrix._34 *= -1;		// ARToolKit has axis z reverse
+
+		 
+
 		float det = D3DXMatrixDeterminant(&matrix);
 		D3DXMatrixInverse(&matrix, &det, &matrix);
-		
-		matrix._42 *= -1;
+
+		D3DXMatrixTranspose(&matrix, &matrix);
+
 		D3DXMATRIX trans;
-		D3DXMATRIX rot;
+		D3DXMATRIX rot;	
 		D3DXMATRIX addRot;
 		D3DXMATRIX scale;
 
@@ -122,25 +128,24 @@ void Builder::BuildModel(Scene *scene)
 			rot.m[i][j] = matrix.m[i][j];
 		}
 
-		// D3DXMatrixRotationYawPitchRoll(&addRot, rad(-180), rad(95), rad(90));
-
-		rot = rot * addRot;
+		// D3DXMatrixRotationYawPitchRoll(&addRot, 90.f, 0.f, 0.f);
+		// D3DXMatrixRotationZ(&addRot, rad(100));
+			D3DXMatrixRotationAxis(&addRot, &D3DXVECTOR3(rad(90.f), 0.f, 0.f),rad(90));
+		// rot = addRot * rot;
 
 
 		D3DXMatrixScaling(&scale, 100.f, 20.f, 50.f);
 
-		D3DXMATRIX World;
-		D3DXMATRIX ObjectWorld;
+		D3DXMATRIX World;			// Transform matrix for camera
+		D3DXMATRIX ObjectWorld;		// Transform matrix for object
 
 		World = scale*rot*trans;
 		ObjectWorld = rot*trans;
 
+		// Add camera into scene
 		Object *kinect = new Cube(scene->GetDevice());
 		kinect->SetTransMatrix(World);
 		(*(scene->GetObjects())).push_back(kinect);
-
-		// det = D3DXMatrixDeterminant(&matrix);
-		// D3DXMatrixInverse(&matrix, &det, &matrix);
 	
 		//////////////////////////////////////////////////////////////////////
 		//					FIND VERTEXES									//

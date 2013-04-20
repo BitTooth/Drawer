@@ -5,13 +5,17 @@
 Scene::Scene()
 {
 	camera = new Camera();
-	D3DXVECTOR3 camPos(2500.0f, 2500.0f, 2500.0f);
-	D3DXVECTOR3 camTarget(0.0f, 0.0f, 0.0f);
-	D3DXVECTOR3 camUp(0.0f, 1.0f, 0.0f);
+	defaultPos = D3DXVECTOR3(0.f, 2500.0f, 2500.0f);
+	defaultTarget = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
+	defaultUp = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
+	ResetCamera();
+}
 
-	camera->m_pos = camPos;
-	camera->m_target = camTarget;
-	camera->m_up = camUp;
+void Scene::ResetCamera()
+{
+	camera->m_pos		= defaultPos;
+	camera->m_target	= defaultTarget;
+	camera->m_up		= defaultUp;
 }
 
 VOID Scene::TurnLeft(float angle)
@@ -19,6 +23,10 @@ VOID Scene::TurnLeft(float angle)
 	m_XToTurn += angle;
 }
 
+VOID Scene::TurnUp(float angle)
+{
+	m_YToTurn += angle;
+}
 
 VOID Scene::Update(float dt)
 {
@@ -31,14 +39,35 @@ VOID Scene::Update(float dt)
 	// }
 
 	D3DXMATRIX rot;
-	D3DXVECTOR3 vec(0.f, 1.f, 0.f);
-	D3DXMatrixRotationAxis(&rot, &vec, m_XToTurn);
+	// D3DXVECTOR3 vec(0.f, 1.f, 0.f);
+	D3DXMatrixRotationAxis(&rot, &(camera->m_up), m_XToTurn);
+
 	D3DXVECTOR4 res;
 	D3DXVec3Transform(&res, &(camera->m_pos), &rot);
+
+	D3DXMatrixIdentity(&rot);
+	D3DXVECTOR3 axis;
+	D3DXVECTOR3 eye(res.x, res.y, res.z);
+
+	D3DXVec3Cross(&axis, &eye, &camera->m_up);
+	D3DXVec3Normalize(&axis, &axis);
+
+	m_YToTurn *= -axis.x / abs(axis.x);
+
+	D3DXMatrixRotationAxis(&rot, &axis, m_YToTurn);
+	D3DXVec3Transform(&res, &(camera->m_up), &rot);
+
+	camera->m_up.x = res.x;
+	camera->m_up.y = res.y;
+	camera->m_up.z = res.z;
+
+	D3DXVec3Transform(&res, &eye, &rot);
+
 	camera->m_pos.x = res.x;
 	camera->m_pos.y = res.y;
 	camera->m_pos.z = res.z;
 	m_XToTurn = 0.f;
+	m_YToTurn = 0.f;
 }
 
 VOID Scene::OnDestroy()

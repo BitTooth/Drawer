@@ -100,6 +100,7 @@ LRESULT Window::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			int newX = LOWORD(lParam);
 			int newY = HIWORD(lParam);
 			m_pScene->TurnLeft((float)(newX - m_nOldMouseX)*0.005f);
+			m_pScene->TurnUp((float)(newY - m_nOldMouseY)*0.005f);
 			m_nOldMouseX = newX;
 			m_nOldMouseY = newY;
 		}

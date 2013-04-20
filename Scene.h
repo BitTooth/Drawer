@@ -15,7 +15,12 @@ private:
 	std::vector<Object*> m_objects;
 	IDirect3DDevice9 *m_pDevice;
 
+	D3DXVECTOR3 defaultPos;
+	D3DXVECTOR3 defaultTarget;
+	D3DXVECTOR3 defaultUp;
+
 	float m_XToTurn;
+	float m_YToTurn;
 public:
 	Scene();
 	IDirect3DDevice9* GetDevice();
@@ -25,6 +30,7 @@ public:
 	std::vector<Object*>* GetObjects();
 	BOOL Init(IDirect3DDevice9 *m_device);
 	void TurnLeft(float angle);
-	void TurnRight(float angle);
+	void TurnUp(float angle);
+	void ResetCamera();
 };
 #endif
