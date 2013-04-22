@@ -130,7 +130,7 @@ void Builder::BuildModel(Scene *scene)
 
 		// D3DXMatrixRotationYawPitchRoll(&addRot, 90.f, 0.f, 0.f);
 		// D3DXMatrixRotationZ(&addRot, rad(100));
-			D3DXMatrixRotationAxis(&addRot, &D3DXVECTOR3(rad(90.f), 0.f, 0.f),rad(90));
+		D3DXMatrixRotationAxis(&addRot, &D3DXVECTOR3(rad(90.f), 0.f, 0.f),rad(90));
 		// rot = addRot * rot;
 
 
@@ -139,8 +139,8 @@ void Builder::BuildModel(Scene *scene)
 		D3DXMATRIX World;			// Transform matrix for camera
 		D3DXMATRIX ObjectWorld;		// Transform matrix for object
 
-		World = scale*rot*trans;
-		ObjectWorld = rot*trans;
+		World = scale*rot*trans*addRot;
+		ObjectWorld = rot*trans*addRot;
 
 		// Add camera into scene
 		Object *kinect = new Cube(scene->GetDevice());
