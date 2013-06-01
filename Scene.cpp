@@ -5,10 +5,28 @@
 Scene::Scene()
 {
 	camera = new Camera();
-	defaultPos = D3DXVECTOR3(0.f, 2500.0f, 2500.0f);
+	defaultPos = D3DXVECTOR3(0.f, 2000.0f, 2000.0f);
 	defaultTarget = D3DXVECTOR3(0.0f, 0.0f, 0.0f);
 	defaultUp = D3DXVECTOR3(0.0f, 1.0f, 0.0f);
 	ResetCamera();
+}
+
+void Scene::AddRotationToObject(float x, float y, float z, int num)
+{
+	if (num > m_objects.size() - 1)
+	{
+		std::cout<<"No such object"<<std::endl;
+		return;
+	}
+
+	D3DXMATRIX addRot;
+	D3DXMatrixIdentity(&addRot);
+	D3DXMatrixRotationYawPitchRoll(&addRot, Builder::rad(x), Builder::rad(y), Builder::rad(z));
+
+	D3DXMATRIX mat = m_objects[num]->GetTransMatrix();
+	mat *= addRot;
+
+	m_objects[num]->SetTransMatrix(mat);
 }
 
 void Scene::ResetCamera()
@@ -28,44 +46,86 @@ VOID Scene::TurnUp(float angle)
 	m_YToTurn += angle;
 }
 
+VOID Scene::TurnCameraUp()
+{
+	D3DXMATRIX rot;
+	D3DXMatrixIdentity(&rot);
+	D3DXVECTOR3 axis;
+	
+	D3DXVec3Cross(&axis, &camera->m_pos, &camera->m_up);
+	D3DXVec3Normalize(&axis, &axis);
+	
+	m_YToTurn *= -axis.x / abs(axis.x);
+	
+	D3DXMatrixRotationAxis(&rot, &axis, Builder::rad(m_YToTurn));
+
+	D3DXVECTOR4 res;
+	D3DXVec3Transform(&res, &(camera->m_up), &rot);
+	D3DXVec4Normalize(&res, &res);
+	
+	camera->m_up.x = res.x;
+	camera->m_up.y = res.y;
+	camera->m_up.z = res.z;
+	
+	D3DXVec3Transform(&res, &camera->m_pos, &rot);
+	
+	camera->m_pos.x = res.x;
+	camera->m_pos.y = res.y;
+	camera->m_pos.z = res.z;
+}
+
+VOID Scene::TurnCameraLeft()
+{
+	D3DXMATRIX rot;
+	D3DXVECTOR3 vec(0.f, 1.f, 0.f);
+	D3DXMatrixRotationAxis(&rot, &(camera->m_up), Builder::rad(m_XToTurn));
+
+	D3DXVECTOR4 res;
+	D3DXVec3Transform(&res, &(camera->m_pos), &rot);
+
+	camera->m_pos.x = res.x;
+	camera->m_pos.y = res.y;
+	camera->m_pos.z = res.z;
+
+}
+
 VOID Scene::Update(float dt)
 {
 	static float p = 0;
 	
+	TurnCameraLeft();
+	TurnCameraUp();
 	// std::vector<Object*>::iterator it;
 	// for (it = m_objects.begin(); it != m_objects.end(); ++it)
 	// {
 	// 	//Do any work with objects
 	// }
 
-	D3DXMATRIX rot;
-	// D3DXVECTOR3 vec(0.f, 1.f, 0.f);
-	D3DXMatrixRotationAxis(&rot, &(camera->m_up), m_XToTurn);
 
-	D3DXVECTOR4 res;
-	D3DXVec3Transform(&res, &(camera->m_pos), &rot);
+	// D3DXMatrixIdentity(&rot);
+	// D3DXVECTOR3 axis;
+	// D3DXVECTOR3 eye(res.x, res.y, res.z);
+	// 
+	// D3DXVec3Cross(&axis, &eye, &camera->m_up);
+	// D3DXVec3Normalize(&axis, &axis);
+	// 
+	// m_YToTurn *= -axis.x / abs(axis.x);
+	// 
+	// D3DXMatrixRotationAxis(&rot, &axis, m_YToTurn);
+	// D3DXVec3Transform(&res, &(camera->m_up), &rot);
+	// // D3DXVECTOR3 temp(res.x, res.y, res.z);
+	// D3DXVec4Normalize(&res, &res);
+	// 
+	// camera->m_up.x = res.x;
+	// camera->m_up.y = res.y;
+	// camera->m_up.z = res.z;
+	// 
+	// D3DXVec3Transform(&res, &eye, &rot);
+	// 
+	// camera->m_pos.x = res.x;
+	// camera->m_pos.y = res.y;
+	// camera->m_pos.z = res.z;
 
-	D3DXMatrixIdentity(&rot);
-	D3DXVECTOR3 axis;
-	D3DXVECTOR3 eye(res.x, res.y, res.z);
-
-	D3DXVec3Cross(&axis, &eye, &camera->m_up);
-	D3DXVec3Normalize(&axis, &axis);
-
-	m_YToTurn *= -axis.x / abs(axis.x);
-
-	D3DXMatrixRotationAxis(&rot, &axis, m_YToTurn);
-	D3DXVec3Transform(&res, &(camera->m_up), &rot);
-
-	camera->m_up.x = res.x;
-	camera->m_up.y = res.y;
-	camera->m_up.z = res.z;
-
-	D3DXVec3Transform(&res, &eye, &rot);
-
-	camera->m_pos.x = res.x;
-	camera->m_pos.y = res.y;
-	camera->m_pos.z = res.z;
 	m_XToTurn = 0.f;
 	m_YToTurn = 0.f;
 }

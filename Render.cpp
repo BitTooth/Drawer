@@ -76,6 +76,8 @@ VOID Render::OnPaint(Scene *scene)
 		ghDiffuseLight = mFX->GetParameterByName(NULL, "gDiffuseLight");
 		ghDiffuseMtl = mFX->GetParameterByName(NULL, "gDiffuseMtl");
 		ghLightVecW = mFX->GetParameterByName(NULL, "gLightVecW");
+		ghWorld	= mFX->GetParameterByName(NULL, "gWorld");
+		ghEyePos = mFX->GetParameterByName(NULL, "gEyePosW");
 		tech = mFX->GetTechniqueByName("TransformTech");
 		mFX->SetTechnique(tech);
 
@@ -100,22 +102,26 @@ VOID Render::OnPaint(Scene *scene)
 // 			D3DXMatrixRotationYawPitchRoll(&rot, (*it)->GetRotation().x, (*it)->GetRotation().y, (*it)->GetRotation().z);
 // 			// world = trans*rot*scale;
 // 			world = scale*rot*trans;
+
 			world = (*it)->GetTransMatrix();
 			HR(m_device->SetTransform(D3DTS_WORLD, &world));
 
 			D3DXMATRIX WorldInverseTransform;
-			D3DXMatrixInverse(&WorldInverseTransform, 0, &world);
+			float det = D3DXMatrixDeterminant(&world);
+			D3DXMatrixInverse(&WorldInverseTransform, &det, &world);
 			D3DXMatrixTranspose(&WorldInverseTransform, &WorldInverseTransform);
 			
 			D3DXCOLOR DiffuseMtl(0.4f, 0.4f, 0.4f, 1.0f);
-			D3DXCOLOR DiffuseLight(0.2f, 0.2f, 0.2f, 1.0f);
-			D3DXVECTOR3 LightVec(1.0f, 5.0f, 10.0f);
+			D3DXCOLOR DiffuseLight(0.1f, 0.1f, 0.1f, 1.0f);
+			D3DXVECTOR3 LightVec(0.f, -100.0f, 0.0f);
 			
 			HR(mFX->SetMatrix(ghWVP, &(world*camMatrix*proj)));
 			HR(mFX->SetMatrix(ghWorldInverseTransform, &WorldInverseTransform));
+			HR(mFX->SetMatrix(ghWorld, &world));
 			HR(mFX->SetValue(ghDiffuseLight, &DiffuseLight, sizeof(D3DXCOLOR)));
 			HR(mFX->SetValue(ghDiffuseMtl, &DiffuseMtl, sizeof(D3DXCOLOR)));
 			HR(mFX->SetValue(ghLightVecW, &LightVec, sizeof(D3DXVECTOR3)));
+			HR(mFX->SetValue(ghEyePos, &camPos, sizeof(D3DXVECTOR3)));
 			UINT nPasses;
 			HR(mFX->Begin(&nPasses, NULL));
 
@@ -156,8 +162,8 @@ BOOL Render::AdditionalInitialization()
 	//Loading shader
 	ID3DXBuffer* errors = 0;
 
-	HR(D3DXCreateEffectFromFile (m_device, "Diffuse.fx", 
-		NULL, NULL, D3DXSHADER_DEBUG, NULL, &mFX, &errors));
+	D3DXCreateEffectFromFile (m_device, "Diffuse.fx", 
+		NULL, NULL, D3DXSHADER_DEBUG, NULL, &mFX, &errors);
 	if (errors)
 	{
 		MessageBox(NULL, (char*)errors->GetBufferPointer(), "Error", MB_OK | MB_ICONERROR);

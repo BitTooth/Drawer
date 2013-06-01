@@ -29,6 +29,12 @@ void ARToolkit::Init()
 	argInit( &cparam, 1.0, 0, 0, 0, 0 );
 }
 
+void ARToolkit::Release()
+{
+	arVideoClose();
+	argCleanup();
+}
+
 bool ARToolkit::DetectMarker(__int8* data, ARMarkerInfo** markerInfo, int* markerNum)
 {
 	argDrawMode2D();

@@ -19,6 +19,9 @@ private:
 	D3DXVECTOR3 defaultTarget;
 	D3DXVECTOR3 defaultUp;
 
+	VOID TurnCameraUp();
+	VOID TurnCameraLeft();
+
 	float m_XToTurn;
 	float m_YToTurn;
 public:
@@ -32,5 +35,6 @@ public:
 	void TurnLeft(float angle);
 	void TurnUp(float angle);
 	void ResetCamera();
+	void AddRotationToObject(float x, float y, float z, int num);
 };
 #endif

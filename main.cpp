@@ -9,8 +9,8 @@ void terminate();
 void init();
 
 Window wnd;
-Builder build;
-Render render;
+Builder build; 
+Render render; 
 Scene scene;
 
 int main()
@@ -26,10 +26,12 @@ int main()
 int commandLine()
 {
 	cout<<"Kinect information visualizer\nEnter '?' for help"<<endl;
-	string cmd;
-	do {
-		cout<<"> ";
+	string cmd;	
+	do 
+	{ 
+		cout<<"Visualizer> ";
 		cin>>cmd;
+		cmd = strlwr(const_cast<char*>(cmd.c_str()));
 		if (cmd == "exit")
 		{
 			terminate();
@@ -52,7 +54,7 @@ int commandLine()
 			render.DisableDrawing(false);
 			continue;
 		}
-		if (cmd == "resetCam")
+		if (cmd == "resetcam")
 		{
 			scene.ResetCamera();
 			continue;
@@ -60,6 +62,14 @@ int commandLine()
 		if (cmd == "?")
 		{
 			printHelp();
+			continue;
+		}
+		if (cmd == "addrot")
+		{
+			float x, y, z;
+			int num;
+			std::cin>>x>>y>>z>>num;
+			scene.AddRotationToObject(x, y, z, num);
 			continue;
 		}
 		cout<<"Unknown command. Type ? for help."<<endl;
@@ -107,6 +117,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 void terminate()
 {
+	render.DisableDrawing(true);
+	SendMessage(wnd.GetWnd(), WM_QUIT, 0, 0);
+	build.Release();
+	// render.OnDestroy();
+	scene.OnDestroy();
 	wnd.Release();
 }
 

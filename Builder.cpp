@@ -8,6 +8,7 @@ void Builder::Init()
 	f = 600;
 	cx = 320;
 	cy = 240;
+	depthThresh = 50.f;
 }
 
 void Builder::LoadImage(const char* path, __int8** colorOut, int &colorCount, short** depthOut, int &depthCount)
@@ -44,11 +45,15 @@ void Builder::LoadImages(int count)
 
 	char path[7];
 	int colorLength, depthLength;
+
+	std::cout<<"Loading "<<count<<" images\n=====================================\n";
 	for (int i = 0; i < m_nImagesCount; ++i)
 	{
 		sprintf(path, "%d.kin", i);
 		LoadImage(path, &m_pColorInfo[i], colorLength, &m_pDepthInfo[i], depthLength);
+		std::cout<<"Image "<<i + 1<<" loaded\n";
 	}
+	std::cout<<"=====================================\nTotal images loaded: "<<count<<std::endl;
 }
 
 bool Builder::isDead(int i, int j)
@@ -57,21 +62,26 @@ bool Builder::isDead(int i, int j)
 		&&	tempVertex[i][j].pos.y == 0.f
 		&&	tempVertex[i][j].pos.z == 0.f)
 		return true;
+	if (tempVertex[i][j].pos.z > 150.0f)
+		return true;
 	return false;
 }
 
 bool Builder::BuildNormal(int i1, int j1, int i2, int j2, int i3, int j3, D3DXVECTOR3 &norm)
 {
-	if (isDead(i1, j1) || isDead(i2, j2))
+	if (isDead(i1, j1) || isDead(i2, j2) || isDead(i3, j3))
 		return false;
 
-	D3DXVECTOR3 v1(tempVertex[i1][j1].pos.x - tempVertex[i2][j2].pos.x,
-					tempVertex[i1][j1].pos.y - tempVertex[i2][j2].pos.y,
-					tempVertex[i1][j1].pos.z - tempVertex[i2][j2].pos.z);
-	D3DXVECTOR3 v2(tempVertex[i1][j1].pos.x - tempVertex[i3][j3].pos.x,
-					tempVertex[i1][j1].pos.y - tempVertex[i3][j3].pos.y,
-					tempVertex[i1][j1].pos.z - tempVertex[i3][j3].pos.z);
-	D3DXVec3Cross(&norm, &v1, &v2);
+	D3DXVECTOR3 res;
+	D3DXVECTOR3 v1( tempVertex[i2][j2].pos.x - tempVertex[i1][j1].pos.x,
+					tempVertex[i2][j2].pos.y - tempVertex[i1][j1].pos.y,
+					tempVertex[i2][j2].pos.z - tempVertex[i1][j1].pos.z);
+	D3DXVECTOR3 v2( tempVertex[i3][j3].pos.x - tempVertex[i1][j1].pos.x,
+					tempVertex[i3][j3].pos.y - tempVertex[i1][j1].pos.y,
+					tempVertex[i3][j3].pos.z - tempVertex[i1][j1].pos.z);
+	D3DXVec3Cross(&res, &v1, &v2);
+	D3DXVec3Normalize(&norm, &res);
+	norm *= -1;
 	return true;
 }
 
@@ -80,8 +90,37 @@ float Builder::rad(float angle)
 	return angle * 3.14f / 180.f;
 }
 
+bool Builder::CheckDepth(int i1, int j1, int i2, int j2)
+{
+	if (abs(tempVertex[i1][j1].pos.z - tempVertex[i2][j2].pos.z) > depthThresh)
+		return false;
+	return true;
+}
+
+void Builder::Release()
+{
+	m_ar.Release();
+
+	for (int i = 0; i < m_nImagesCount; ++i)
+	{
+		delete [] m_pColorInfo[i];
+		delete [] m_pDepthInfo[i];
+	}
+
+	delete [] m_pColorInfo;
+	delete [] m_pDepthInfo;
+}
+
 void Builder::BuildModel(Scene *scene)
 {
+	std::cout<<"Building the scene\n";
+
+	static int width = 640;
+	static int height = 480;
+
+
+	static int coun = 0;
+
 	// for each Image loaded from Kinect
 	for (int img = 0; img < m_nImagesCount; ++img)
 	{
@@ -128,11 +167,7 @@ void Builder::BuildModel(Scene *scene)
 			rot.m[i][j] = matrix.m[i][j];
 		}
 
-		// D3DXMatrixRotationYawPitchRoll(&addRot, 90.f, 0.f, 0.f);
-		// D3DXMatrixRotationZ(&addRot, rad(100));
-		D3DXMatrixRotationAxis(&addRot, &D3DXVECTOR3(rad(90.f), 0.f, 0.f),rad(90));
-		// rot = addRot * rot;
-
+		D3DXMatrixRotationYawPitchRoll(&addRot, 0.f, rad(90.f), 0.f);
 
 		D3DXMatrixScaling(&scale, 100.f, 20.f, 50.f);
 
@@ -160,10 +195,10 @@ void Builder::BuildModel(Scene *scene)
 		float xmax = 0.f;
 		float ymax = 0.f;
 
-		for (int i = 0; i < 480; ++i) {
+		for (int i = 0; i < height; ++i) {
 			std::vector<TempVertex> x;
 			tempVertex.push_back(x);
-			for (int j = 0; j < 640; ++j) {
+			for (int j = 0; j < width; ++j) {
 				// float* pDepth = reinterpret_cast<float*>(&m_pDepthInfo[i][k*640 + j]);
 				// float depth = *pDepth;
 				///////////////////////////////////////////////////////////////////////////////
@@ -193,7 +228,7 @@ void Builder::BuildModel(Scene *scene)
 				// D3DXVECTOR4 res(x, y, z, 0.f);
 				// D3DXVec3Transform(&res, &vec, &matrix);
 				// ////////////////////////////////////////////////////////////////////////////
-				short depth = (short)(m_pDepthInfo[img][i*640 + j]);
+				short depth = (short)(m_pDepthInfo[img][i*width + j]);
 				if (depth == 0 || j == cx || i == cy) {
 					tempVertex[i].push_back(nullVertex);
 					continue;
@@ -201,7 +236,7 @@ void Builder::BuildModel(Scene *scene)
 
 				depth = ~(depth >> 3);
 
-				if (depth == 0 || j == cx || i == cy) {
+				if (depth == 0 || abs(depth) > 2030.f) {
 					tempVertex[i].push_back(nullVertex);
 					continue;
 				}
@@ -229,24 +264,26 @@ void Builder::BuildModel(Scene *scene)
 
 		std::vector<int> tempIndex;
 
-		for (int i = 1; i < 480 - 1; ++i)
-			for (int j = 1; j < 640 - 1; ++j)
+		for (int i = 1; i < height - 1; ++i)
+			for (int j = 1; j < width - 1; ++j)
 			{
 				if(isDead(i, j)) continue;
 
 				// Triangulate
-				if(!isDead(i + 1, j) && !isDead(i+1, j+1))
+				if(!isDead(i + 1, j) && !isDead(i+1, j+1) 
+					&& CheckDepth(i + 1, j, i, j) && CheckDepth(i+1, j+1, i, j))
 				{	
-					tempIndex.push_back((i+1)*640+(j+1));	//	|\ 
+					tempIndex.push_back((i+1)*width+(j+1));	//	|\ 
 															//	| \ 
-					tempIndex.push_back((i+1)*640+j);		//	|  \ 
-					tempIndex.push_back(i*640+j);			//	|___\ 
+					tempIndex.push_back((i+1)*width+j);		//	|  \ 
+					tempIndex.push_back(i*width+j);			//	|___\ 
 				}
-				if(!isDead(i, j+1) && !isDead(i+1, j+1))
+				if(!isDead(i, j+1) && !isDead(i+1, j+1)
+					&& CheckDepth(i, j + 1, i, j) && CheckDepth(i+1, j+1, i, j))
 				{												//	\----|
-					tempIndex.push_back(i*640+(j+1));			//	 \   |
-					tempIndex.push_back((i+1)*640+(j+1));		//	  \  |
-					tempIndex.push_back(i*640+j);				//	   \ |
+					tempIndex.push_back(i*width+(j+1));			//	 \   |
+					tempIndex.push_back((i+1)*width+(j+1));		//	  \  |
+					tempIndex.push_back(i*width+j);				//	   \ |
 				}
 
 				// Find normal
@@ -287,40 +324,62 @@ void Builder::BuildModel(Scene *scene)
 					tempVertex[i][j].normal.y = 1.f;
 					tempVertex[i][j].normal.z = 0.f;
 				} else {
-					tempVertex[i][j].normal.x = sumx / (float)count;
-					tempVertex[i][j].normal.y = sumy / (float)count;
-					tempVertex[i][j].normal.z = sumz / (float)count;
+					D3DXVECTOR3 norm;
+					D3DXVECTOR3 temp;
+
+					temp.x = sumx / (float)count;
+					temp.y = sumy / (float)count;
+					temp.z = sumz / (float)count;
+
+					D3DXVec3Normalize(&norm, &temp);
+
+					tempVertex[i][j].normal.x = norm.x;
+					tempVertex[i][j].normal.y = norm.y;
+					tempVertex[i][j].normal.z = norm.z;
 				}
 
+				float eps = 0.01f;
+				if (abs(sqrt(tempVertex[i][j].normal.x*tempVertex[i][j].normal.x + 
+					tempVertex[i][j].normal.y*tempVertex[i][j].normal.y +
+					tempVertex[i][j].normal.z*tempVertex[i][j].normal.z) - 1.0f) < eps)
+				{
+					coun++;
+					// std::cout<<"Wrong vertex normal! "<<coun<<std::endl;
+				}
+
+				TempVertex t = tempVertex[i][j];
+				i++;
+				i--;
 			}
 
 			//////////////////////////////////////////////////////////////////////
 			//			FILL VERTEX ARRAY, INDEX ARRAY AND CREATE MESH			//
 			//////////////////////////////////////////////////////////////////////
-			float *vertex = new float[640*480*6];
+			float *vertex = new float[width*height*6];
 			DWORD *index = new DWORD[tempIndex.size()];
 
-			for (int i = 0; i < 480; ++i)
+			for (int i = 0; i < height; ++i)
 			{
-				for (int j = 0; j < 640; ++j)
+				for (int j = 0; j < width; ++j)
 				{
-					vertex[i*640*6 + j*6 + 0] = tempVertex[i][j].pos.x;
-					vertex[i*640*6 + j*6 + 1] = tempVertex[i][j].pos.y;
-					vertex[i*640*6 + j*6 + 2] = tempVertex[i][j].pos.z;
-					vertex[i*640*6 + j*6 + 3] = tempVertex[i][j].normal.x;
-					vertex[i*640*6 + j*6 + 4] = tempVertex[i][j].normal.y;
-					vertex[i*640*6 + j*6 + 5] = tempVertex[i][j].normal.z;
+					vertex[i*width*6 + j*6 + 0] = tempVertex[i][j].pos.x;
+					vertex[i*width*6 + j*6 + 1] = tempVertex[i][j].pos.y;
+					vertex[i*width*6 + j*6 + 2] = tempVertex[i][j].pos.z;
+					vertex[i*width*6 + j*6 + 3] = tempVertex[i][j].normal.x;
+					vertex[i*width*6 + j*6 + 4] = tempVertex[i][j].normal.y;
+					vertex[i*width*6 + j*6 + 5] = tempVertex[i][j].normal.z;
 				}
 			}
 
 			for (int i = 0; i < tempIndex.size(); ++i)
 				index[i] = tempIndex[i];
 
-			Object *mesh = new Mesh(scene->GetDevice(), vertex, index, 640*480, tempIndex.size());
-			// mesh->SetPos(D3DXVECTOR3(0.f, 0.f, 0.f));
-			// mesh->SetRotation(D3DXVECTOR3(0.f, 0.f, 0.f));
-			// mesh->SetScale(D3DXVECTOR3(1.f, 1.f, 1.f));
+			Object *mesh = new Mesh(scene->GetDevice(), vertex, index, width*height, tempIndex.size());
 			mesh->SetTransMatrix(ObjectWorld);
 			scene->GetObjects()->push_back(mesh);
+
+			std::cout<<"Image "<<img+1<<"/"<<m_nImagesCount<<" builded\n";
 	}
+
+	std::cout<<"Building finished\n"<<coun<<std::endl;
 }

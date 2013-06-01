@@ -21,6 +21,7 @@ public:
 	bool DetectMarker(__int8* data, ARMarkerInfo** markerInfo, int* markerNum);
 	D3DXMATRIX GetTransformMatrix(__int8* data);
 	void Init();
+	void Release();
 };
 
 #endif

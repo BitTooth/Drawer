@@ -38,10 +38,12 @@ private:
 	BOOL AdditionalInitialization();
 
 	D3DXHANDLE ghWVP;
+	D3DXHANDLE ghWorld;
 	D3DXHANDLE ghWorldInverseTransform;
 	D3DXHANDLE ghDiffuseMtl;
 	D3DXHANDLE ghDiffuseLight;
 	D3DXHANDLE ghLightVecW;
+	D3DXHANDLE ghEyePos;
 	D3DXHANDLE tech;
 public:
 	ID3DXEffect* mFX;
